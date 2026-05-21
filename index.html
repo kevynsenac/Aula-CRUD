@@ -1,44 +1,105 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CRUDzin</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CRUDinho</title>
+
     <style>
-        body {font-family: Arial, Helvetica, sans-serif; margin: 40px;}
-        h1 {text-align: center; font-size: 2.5rem; font-family: Impact, sans-serif; color: cadetblue; text-shadow: 2px 2px #000;}
-        table {border-collapse: collapse; width: 100%; margin-top: 20px;}
-        th td {border: 1px solid #ccc; padding: 8px; text-align: center;}
-        th {background-color: #f0f0f0;}
-        form {margin-bottom: 20px; text-align: center;}
-        input, button {padding: 6px}
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            font-family: Impact, sans-serif;
+            color: cadetblue;
+            text-shadow: 2px 2px #000;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        form {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        input,
+        button {
+            padding: 6px;
+        }
     </style>
 </head>
+
 <body>
-    <h1>CRUDzinho</h1>
-    <form id="form">
-        <input type="text" id="nome" placeholder="Nome do produto" required>
-        <input type="text" id="preco" placeholder="Preco do produto" required>
-        <input type="text" id="quantidade" placeholder="Quantidade do produto" required>
+    <h1>CRUDinho</h1>
+
+    <form id="addForm">
+        <input type="text" id="nome" placeholder="Nome do Produto" required />
+        <input type="number" id="preco" placeholder="Preço do Produto" required />
+        <input type="number" id="quantidade" placeholder="Quantidade de Produtos" required />
+
         <button type="submit">Adicionar</button>
     </form>
+
     <table>
         <thead>
             <tr>
                 <th>Ordem</th>
                 <th>Nome</th>
-                <th>Preco</th>
+                <th>Preço</th>
                 <th>Quantidade</th>
             </tr>
         </thead>
         <tbody id="lista"></tbody>
     </table>
 </body>
+
 <script>
-    async function carregarDados () {
-        
-    };
+    async function carregarDados() {
+        const resp = await fetch("http://localhost:3000/produtos");
+        const dados = await resp.json();
+
+        const lista = document.getElementById("lista");
+
+        lista.innerHTML = "";
+
+        dados.forEach((produto, indice) => {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${indice + 1}</td>
+                <td>${produto.nome}</td>
+                <td>${produto.preco}</td>
+                <td>${produto.quantidade}</td>
+                <td> <button>Remover</button> </td>
+            `;
+
+            lista.appendChild(tr);
+        });
+
+        console.log(dados);
+    }
 
     carregarDados();
 </script>
+
 </html>
