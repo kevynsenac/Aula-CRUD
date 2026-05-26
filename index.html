@@ -63,7 +63,7 @@
       />
 
       <button type="submit">Salvar</button>
-      <button type="submit" id="cancelarEdicao" style="display: none">
+      <button type="button" id="cancelarEdicao" style="display: none">
         Cancelar
       </button>
     </form>
@@ -75,6 +75,8 @@
           <th>Nome</th>
           <th>Preço</th>
           <th>Quantidade</th>
+          <th>Atualizar</th>
+          <th>Remover</th>
         </tr>
       </thead>
       <tbody id="lista"></tbody>
@@ -82,6 +84,14 @@
   </body>
 
   <script>
+    //variaveis globais
+    const produtoId = document.getElementById("produtoId");
+    const campoNome = document.getElementById("nome");
+    const campoPreco = document.getElementById("preco");
+    const campoQuantidade = document.getElementById("quantidade");
+    const btnCancelarEdicao = document.getElementById("cancelarEdicao");
+    const addForm = document.getElementById("addForm");
+
     async function carregarDados() {
       const resp = await fetch("http://localhost:3000/produtos");
       const dados = await resp.json();
@@ -94,24 +104,70 @@
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-                <td>${indice + 1}</td>
-                <td>${produto.nome}</td>
-                <td>${produto.preco}</td>
-                <td>${produto.quantidade}</td>
-                <td> <button onclick="editar(${produto.id}, ${produto.nome}, ${produto.preco}, ${produto.quantidade})">Editar</button> </td>
-                <td> <button onclick="remover(${produto.id})">Remover</button> </td>
+            <td>${indice + 1}</td>
+            <td>${produto.nome}</td>
+            <td>${produto.preco}</td>
+            <td>${produto.quantidade}</td>
+            <td> <button onclick="editar(${produto.id}, '${produto.nome}', ${produto.preco}, ${produto.quantidade})">Editar</button> </td>
+            <td> <button onclick="remover(${produto.id})">Remover</button> </td>
             `;
 
         lista.appendChild(tr);
       });
-
-      console.log(dados);
     }
 
+    // Função para remover um produto pelo id
     async function remover(id) {
       await fetch(`http://localhost:3000/produtos/${id}`, { method: "DELETE" });
       carregarDados();
     }
+
+    // Função global para editar produto: preenche o formulário e ativa modo edição
+    window.editar = (id, nome, preco, quantidade) => {
+      produtoId.value = id;
+      campoNome.value = nome;
+      campoPreco.value = preco;
+      campoQuantidade.value = quantidade;
+      btnCancelarEdicao.style.display = "";
+    };
+
+    // Função para cancelar a edição e limpar o formulário
+    btnCancelarEdicao.onclick = () => {
+      produtoId.value = "";
+      addForm.reset();
+      btnCancelarEdicao.style.display = "none";
+    };
+
+    // Função para tratar o envio do formulário (adicionar ou atualizar)
+    addForm.onsubmit = async (e) => {
+      e.preventDefault();
+
+      const id = produtoId.value;
+      const nome = campoNome.value;
+      const preco = campoPreco.value;
+      const quantidade = campoQuantidade.value;
+
+      if (id) {
+        // Se tem id, está editando: faz PUT para atualizar
+        await fetch(`http://localhost:3000/produtos/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, preco, quantidade }),
+        });
+      } else {
+        // Se não tem id, está cadastrando novo: faz POST
+        await fetch("http://localhost:3000/produtos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, preco, quantidade }),
+        });
+      }
+
+      e.target.reset();
+      produtoId.value = "";
+      btnCancelarEdicao.style.display = "none";
+      carregarDados();
+    };
 
     carregarDados();
   </script>
